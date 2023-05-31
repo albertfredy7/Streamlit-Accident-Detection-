@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import streamlit as st
 import os
-import tensorflow
+import tensorflow as tf
 import keras
 
 # Load the pre-trained model
-model = keras.models.load_model('D:\Downloads\Main Project\detection model\Accident_detection_model.h5')
+model = keras.models.load_model('D:\projects\MainProject\Streamlit-Accident-Detection-\Accident detection\Accident_detection_model.h5')
 
 # Function to preprocess a frame
 def preprocess_frame(frame):
@@ -27,12 +27,10 @@ def detect_accident(frame):
     prediction = model.predict(frame)[0]
 
     # Determine the predicted class based on the probability
-    if prediction > 3.15:
-
-        return 'Accident'
-
+    if np.max(prediction) > 3.15:
+        return True
     else:
-        return 'Non-Accident'
+        return False
 
 def main():
     st.title("Accident Detection System")
@@ -54,7 +52,18 @@ def main():
         if not video.isOpened():
             st.error("Failed to open the video file.")
         else:
-            # Read and display the video frames
+            # Initialize variables
+            frame_count = 0
+            accident_count = 0
+            alert_shown = False
+
+            # Get the total number of frames in the video
+            total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+            # Create a progress bar
+            progress_bar = st.progress(0)
+
+            # Read and process the video frames
             while True:
                 ret, frame = video.read()
                 if not ret:
@@ -66,29 +75,36 @@ def main():
                 img = img.astype(np.float32) / 255.0
                 img = np.expand_dims(img, axis=0)
 
-                # Predict the probability of the input frame being an accident frame
-                predictions = model.predict(img)
-                
-                # Classify the frame as an accident or non-accident frame based on the threshold probability
-                if (predictions.max(axis=1) > 3.15).any():
-                    label = 'Accident'
-                else:
-                    label = 'Non-accident'
-                    
+                # Detect accident
+                is_accident = detect_accident(img)
+
                 # Draw the label on the output frame
+                label = 'Accident' if is_accident else 'Non-accident'
                 cv2.putText(frame, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                
-                # Write the output frame to the output video writer
-                #st.write(label)
-                
+
                 # Display the output frame
-                cv2.imshow('frame',frame)
+                cv2.imshow('frame', frame)
+
+                # Increment frame count and reset accident count if non-accident frame
+                if not is_accident:
+                    frame_count += 1
+                    accident_count = 0
+                else:
+                    frame_count += 1
+                    accident_count += 1
+
+                # Show alert message if accident count threshold is reached and alert not shown yet
+                if accident_count >= 25 and not alert_shown:
+                    st.warning("Accident Detected!")
+                    alert_shown = True
+                    # Hide the progress bar
+                    progress_bar.empty()
+
+                # Update the progress bar
+                progress_bar.progress(int((frame_count / total_frames) * 100))
+
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-
-
-                # Display the frame
-                #st.image(frame, channels="BGR")
 
         # Release the video capture object and delete the temporary file
         video.release()
@@ -99,4 +115,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "117415420125",
+    "project_id": "resqapp-97d1a",
+    "storage_bucket": "resqapp-97d1a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:117415420125:android:a00bc4f7666e9af89dfb34",
+        "android_client_info": {
+          "package_name": "com.resq.resq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCndfqLI7S_64GOzmfY1_QPjOCZt7AZgs4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
